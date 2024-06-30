@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Basic Thought Mapper</title>
+  <style>
+    .thought {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .red {
+      background-color: #ffdddd;
+    }
+    .purple {
+      background-color: #e6d0ff;
+    }
+    .green {
+      background-color: #ddffdd;
+    }
+    .cluster {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Basic Thought Mapper</h1>
+  
+  <div>
+    <label for="thought-input">New Thought:</label>
+    <input type="text" id="thought-input">
+    <button onclick="addThought()">Add</button>
+  </div>
+  
+  <div id="thought-container"></div>
+  
+  <div>
+    <button onclick="createCluster()">Create Cluster</button>
+    <button onclick="resetThoughts()">Start New</button>
+  </div>
+  
+  <div id="cluster-container"></div>
+  
+  <script>
+    let thoughts = [];
+    let clusters = [];
+    
+    function addThought() {
+      const input = document.getElementById('thought-input');
+      const thought = {
+        id: Date.now(),
+        text: input.value,
+        category: 'red'
+      };
+      
+      thoughts.push(thought);
+      input.value = '';
+      renderThoughts();
+    }
+    
+    function toggleCategory(id) {
+      const thought = thoughts.find(t => t.id === id);
+      if (thought.category === 'red') {
+        thought.category = 'purple';
+      } else if (thought.category === 'purple') {
+        thought.category = 'green';
+      } else {
+        thought.category = 'red';
+      }
+      renderThoughts();
+    }
+    
+    function renderThoughts() {
+      const container = document.getElementById('thought-container');
+      container.innerHTML = '';
+      
+      for (const thought of thoughts) {
+        const div = document.createElement('div');
+        div.innerText = thought.text;
+        div.className = `thought ${thought.category}`;
+        div.onclick = () => toggleCategory(thought.id);
+        container.appendChild(div);
+      }
+    }
+    
+    function createCluster() {
+      clusters.push([...thoughts]);
+      renderClusters();
+      resetThoughts();
+    }
+    
+    function resetThoughts() {
+      thoughts = [];
+      renderThoughts();
+    }
+    
+    function renderClusters() {
+      const container = document.getElementById('cluster-container');
+      container.innerHTML = '';
+      
+      for (const cluster of clusters) {
+        const div = document.createElement('div');
+        div.className = 'cluster';
+        
+        for (const thought of cluster) {
+          const p = document.createElement('p');
+          p.innerText = thought.text;
+          p.className = thought.category;
+          div.appendChild(p);
+        }
+        
+        container.appendChild(div);
+      }
+    }
+  </script>
+</body>
+</html>
