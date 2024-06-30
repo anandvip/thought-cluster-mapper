@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Persona-based Thought Mapper</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f0f0f0; }
+    .thought {
+      display: flex;
+      align-items: stretch;
+      margin: 10px 0;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .color-change {
+      width: 30px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .text {
+      flex-grow: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+    }
+    .red { background-color: #ffcccb; }
+    .green { background-color: #90EE90; }
+    .blue { background-color: #ADD8E6; }
+    #persona {
+      border: 2px solid #333;
+      padding: 20px;
+      margin-top: 20px;
+      background-color: #e6e6fa;
+      min-height: 200px;
+      border-radius: 10px;
+    }
+    #persona-name {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    #persona-name-display {
+      cursor: pointer;
+    }
+    #generate-thought {
+      margin-top: 10px;
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    #generate-thought:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Persona-based Thought Mapper</h1>
+  
+  <div id="persona">
+    <div id="persona-name">Persona: <span id="persona-name-display" contenteditable="true">Anonymous</span></div>
+    <button id="generate-thought" onclick="generateThought()">Generate Thought</button>
+    <div id="persona-thoughts"></div>
+  </div>
+  
+  <script>
+    let persona = {
+      name: "Anonymous",
+      thoughts: []
+    };
+    const colors = ['red', 'green', 'blue'];
+    const thoughtTemplates = [
+      "I wonder about...",
+      "Today I learned that...",
+      "An interesting idea:",
+      "A question I have:",
+      "Something I want to explore:",
+      "A goal for the future:",
+      "A memory that stands out:",
+      "A concept I'm trying to understand:",
+      "An observation about the world:",
+      "A personal reflection:"
+    ];
+
+    // Load data from local storage
+    function loadFromLocalStorage() {
+      const savedPersona = localStorage.getItem('persona');
+      if (savedPersona) {
+        persona = JSON.parse(savedPersona);
+        document.getElementById('persona-name-display').textContent = persona.name;
+        renderPersonaThoughts();
+      }
+    }
+
+    // Save data to local storage
+    function saveToLocalStorage() {
+      localStorage.setItem('persona', JSON.stringify(persona));
+    }
+
+    function updatePersonaName() {
+      persona.name = document.getElementById('persona-name-display').textContent;
+      saveToLocalStorage();
+    }
+
+    function generateThought() {
+      const template = thoughtTemplates[Math.floor(Math.random() * thoughtTemplates.length)];
+      const thought = {
+        id: Date.now(),
+        text: template,
+        colorIndex: Math.floor(Math.random() * colors.length)
+      };
+      persona.thoughts.push(thought);
+      renderPersonaThoughts();
+      saveToLocalStorage();
+    }
+
+    function changeColor(thought) {
+      thought.colorIndex = (thought.colorIndex + 1) % colors.length;
+      renderPersonaThoughts();
+      saveToLocalStorage();
+    }
+
+    function updateThought(thought, newText) {
+      thought.text = newText.trim();
+      saveToLocalStorage();
+    }
+
+    function renderPersonaThoughts() {
+      const container = document.getElementById('persona-thoughts');
+      container.innerHTML = '';
+      
+      for (const thought of persona.thoughts) {
+        const div = document.createElement('div');
+        div.className = `thought ${colors[thought.colorIndex]}`;
+        
+        const leftColorChange = document.createElement('div');
+        leftColorChange.className = 'color-change';
+        leftColorChange.innerHTML = '🎨';
+        leftColorChange.onclick = () => changeColor(thought);
+        
+        const text = document.createElement('textarea');
+        text.className = 'text';
+        text.value = thought.text;
+        text.oninput = (event) => updateThought(thought, event.target.value);
+        
+        const rightColorChange = document.createElement('div');
+        rightColorChange.className = 'color-change';
+        rightColorChange.innerHTML = '🗑️';
+        rightColorChange.onclick = () => {
+          persona.thoughts = persona.thoughts.filter(t => t.id !== thought.id);
+          renderPersonaThoughts();
+          saveToLocalStorage();
+        };
+        
+        div.appendChild(leftColorChange);
+        div.appendChild(text);
+        div.appendChild(rightColorChange);
+        
+        container.appendChild(div);
+      }
+    }
+
+    // Initialize
+    document.getElementById('persona-name-display').onblur = updatePersonaName;
+    loadFromLocalStorage();
+  </script>
+</body>
+</html>
